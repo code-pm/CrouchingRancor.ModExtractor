@@ -46,6 +46,7 @@ function scrapeModPage(html) {
         var $mod = cheerio(elem);
         var data = {};  // Mod data record
 
+        data.uid = $mod.parent().attr("data-id");
         data.name = $mod.find(".statmod-img").attr("alt");
         data.pips = $mod.find(".statmod-pip").length;
         data.level = parseInt($mod.find(".statmod-level").text());
@@ -54,15 +55,15 @@ function scrapeModPage(html) {
 
 
         data.primarystat = {
-            "Name": $mod.find(".statmod-stats-1 .statmod-stat-label").text(),
-            "Value": $mod.find(".statmod-stats-1 .statmod-stat-value").text()
+            "name": $mod.find(".statmod-stats-1 .statmod-stat-label").text(),
+            "value": $mod.find(".statmod-stats-1 .statmod-stat-value").text()
         };
 
         data.secondarystats = $mod.find(".statmod-stats-2 .statmod-stat").map((j, elem2) => {
             var $stat = cheerio(elem2);
             return {
-                "Name": $stat.find(".statmod-stat-label").text(),
-                "Value": $stat.find(".statmod-stat-value").text()
+                "name": $stat.find(".statmod-stat-label").text(),
+                "value": $stat.find(".statmod-stat-value").text()
             };
         }).toArray()
 
