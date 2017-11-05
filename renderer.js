@@ -5,7 +5,15 @@ const $ = require('jquery')
 const axios = require('axios');
 const cheerio = require('cheerio');
 const jsonfile = require('jsonfile');
-const {dialog} = require('electron').remote;
+const { dialog } = require('electron').remote;
+const slotMap = new Map([
+    [1, "square"],
+    [2, "arrow"],
+    [3, "diamond"],
+    [4, "triangle"],
+    [5, "circle"],
+    [6, "cross"]
+]);
 
 const crawlModPages = async url => {
     try {
@@ -37,6 +45,33 @@ const crawlModPages = async url => {
     }
 };
 
+function resolveSetName(fullname){
+    if (fullname.includes("Health")){
+        return "health";
+    }
+    else if (fullname.includes("Offense")){
+        return "offense";
+    }
+    else if (fullname.includes("Defense")){
+        return "defense";
+    }
+    else if (fullname.includes("Speed")){
+        return "speed";
+    }
+    else if (fullname.includes("Crit Chance")){
+        return "critchance";
+    }
+    else if (fullname.includes("Crit Damage")){
+        return "critdamage";
+    }
+    else if (fullname.includes("Potency")){
+        return "potency";
+    }
+    else if (fullname.includes("Tenacity")){
+        return "tenacity";
+    }
+}
+
 function scrapeModPage(html) {
     const $o = cheerio.load(html);
 
@@ -46,26 +81,26 @@ function scrapeModPage(html) {
         var $mod = cheerio(elem);
         var data = {};  // Mod data record
 
-        data.uid = $mod.parent().attr("data-id");
-        data.name = $mod.find(".statmod-img").attr("alt");
-        data.pips = $mod.find(".statmod-pip").length;
-        data.level = parseInt($mod.find(".statmod-level").text());
-        data.character = $mod.find(".char-portrait")[0].attribs.title;
-        data.slot = parseInt(elem.attribs.class.match(/pc-statmod-slot(\d+)/)[1]);
+        data.mod_uid = $mod.parent().attr("data-id");
+        
+        const slotID = parseInt(elem.attribs.class.match(/pc-statmod-slot(\d+)/)[1]);
+        data.slot = slotMap.get(slotID);
 
+        const modname = $mod.find(".statmod-img").attr("alt");
+        data.set = resolveSetName(modname);
+        
+        data.pips = $mod.find(".statmod-pip").length.toString();
+        data.level = $mod.find(".statmod-level").text();
+        data.characterName = $mod.find(".char-portrait")[0].attribs.title;
 
-        data.primarystat = {
-            "name": $mod.find(".statmod-stats-1 .statmod-stat-label").text(),
-            "value": $mod.find(".statmod-stats-1 .statmod-stat-value").text()
-        };
+        data.primaryBonusType = $mod.find(".statmod-stats-1 .statmod-stat-label").text();
+        data.primaryBonusValue = $mod.find(".statmod-stats-1 .statmod-stat-value").text();
 
-        data.secondarystats = $mod.find(".statmod-stats-2 .statmod-stat").map((j, elem2) => {
+        $mod.find(".statmod-stats-2 .statmod-stat").each((j, elem2) => {
             var $stat = cheerio(elem2);
-            return {
-                "name": $stat.find(".statmod-stat-label").text(),
-                "value": $stat.find(".statmod-stat-value").text()
-            };
-        }).toArray()
+            data[`secondaryType_${j+1}`] = $stat.find(".statmod-stat-label").text();
+            data[`secondaryValue_${j+1}`] = $stat.find(".statmod-stat-value").text();
+        })
 
         return data;
     });
@@ -81,38 +116,37 @@ $(() => {
 
     $("#btnExport").click(() => {
 
-        try{
+        try {
             const input = $("#txtGuildUrl").val();
             const m = rgx.exec(input);
-    
+
             if (m == null) {
                 throw "Not a valid swgoh.gg guild URL!";
             }
-    
-            const file = dialog.showSaveDialog({ 
+
+            const file = dialog.showSaveDialog({
                 title: "Save mods data to file...",
                 defaultPath: "mods.json"
             });
-    
+
             const url = m[0] + "mods/";
             const data = crawlModPages(url);
-            
+
             data.then(d => {
                 jsonfile.writeFile(file, d, function (err) {
                     console.error(err)
-                })    
+                    throw err.message
+                })
             })
-            
-            console.log(data);
-    
+
         }
-        catch (error){
+        catch (error) {
             dialog.showMessageBox({
                 type: "error",
                 title: "uh oh...",
                 message: error
             })
         }
-        
+
     })
 });
