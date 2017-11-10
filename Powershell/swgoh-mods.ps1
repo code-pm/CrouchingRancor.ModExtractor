@@ -70,6 +70,13 @@ function Scrape-ModPage([string]$url) {
         $mod["primaryBonusType"] = $primarystats.getElementsByClassName("statmod-stat-label")[0].textContent
         $mod["primaryBonusValue"] = $primarystats.getElementsByClassName("statmod-stat-value")[0].textContent
     
+
+        # Make sure each mod object has all secondary attributes.. even if their not set
+        foreach($i in 1..4){
+            $mod["secondaryType_$($i)"] = ""
+            $mod["secondaryValue_$($i)"] = ""
+        }
+
         $secondarystats = $row.getElementsByClassName("statmod-stats-2")[0].getElementsByClassName("statmod-stat")
         for ($i = 0; $i -lt $secondarystats.length; $i++) {
             $stat = $secondarystats[$i]
