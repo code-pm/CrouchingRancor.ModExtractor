@@ -96,6 +96,11 @@ function scrapeModPage(html) {
         data.primaryBonusType = $mod.find(".statmod-stats-1 .statmod-stat-label").text();
         data.primaryBonusValue = $mod.find(".statmod-stats-1 .statmod-stat-value").text();
 
+        for(let j = 1; j<=4; j++){
+            data[`secondaryType_${j}`] = "";
+            data[`secondaryValue_${j}`] = "";
+        }
+
         $mod.find(".statmod-stats-2 .statmod-stat").each((j, elem2) => {
             var $stat = cheerio(elem2);
             data[`secondaryType_${j+1}`] = $stat.find(".statmod-stat-label").text();
