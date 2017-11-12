@@ -1,3 +1,4 @@
+[CmdletBinding()]
 Param(
     [string]$url
 )
@@ -15,7 +16,6 @@ $slotMap = "","square","arrow","diamond","triangle","circle","cross"
 
 # Stop execution on error
 $ErrorActionPreference = "Stop"
-
 
 function Resolve-ModSetName([string]$modname){
     if ($modname.Contains("Health")){
@@ -44,6 +44,12 @@ function Resolve-ModSetName([string]$modname){
     }
 }
 
+function Get-ComTypeName($o)
+{
+    $typeGuid = $o.pstypenames[0].Split('#')[1]
+    return (Get-ItemProperty "HKLM:\SOFTWARE\Classes\Interface\$typeGuid").'(default)'
+}
+
 function Scrape-ModPage([string]$url) {
     $mods = @();
     $r = Invoke-WebRequest $url
@@ -67,6 +73,13 @@ function Scrape-ModPage([string]$url) {
         $mod["characterName"] = $row.getElementsByClassName("char-portrait")[0].title
     
         $primarystats = $row.getElementsByClassName("statmod-stats-1")[0]
+
+        if ($mods.Length -eq 0){
+            Write-Verbose $row.outerHTML
+            Write-Verbose "row type: $(Get-ComTypeName $row)"
+            Write-Verbose "primarystats type: $(Get-ComTypeName $primarystats)"
+        }
+
         $mod["primaryBonusType"] = $primarystats.getElementsByClassName("statmod-stat-label")[0].textContent
         $mod["primaryBonusValue"] = $primarystats.getElementsByClassName("statmod-stat-value")[0].textContent
     
