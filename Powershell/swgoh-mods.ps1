@@ -99,7 +99,7 @@ function Scrape-ModPage([string]$url) {
         $secondarystats = $secondarystatlist.getElementsByClassName("statmod-stat")
         for ($i = 0; $i -lt $secondarystats.length; $i++) {
 
-            $stat = $secondarystats[$i]
+            $stat = $secondarystats[$i] | select -First 1
             if (($mods.Length -eq 0) -and ($i -eq 0)){
                 Write-Verbose "secondary stat type: $(Get-ComTypeName $stat)"
             }
