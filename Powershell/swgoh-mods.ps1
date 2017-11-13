@@ -75,7 +75,7 @@ function Scrape-ModPage([string]$url) {
         $primarystats = $row.getElementsByClassName("statmod-stats-1")[0] | select -First 1
 
         if ($mods.Length -eq 0){
-            Write-Verbose $row.outerHTML
+            #Write-Verbose $row.outerHTML
             Write-Verbose "row type: $(Get-ComTypeName $row)"
             Write-Verbose "primarystats type: $(Get-ComTypeName $primarystats)"
         }
@@ -90,9 +90,20 @@ function Scrape-ModPage([string]$url) {
             $mod["secondaryValue_$($i)"] = ""
         }
 
-        $secondarystats = $row.getElementsByClassName("statmod-stats-2")[0].getElementsByClassName("statmod-stat")
+        $secondarystatlist = $row.getElementsByClassName("statmod-stats-2")[0] | select -First 1
+
+        if ($mods.Length -eq 0){
+            Write-Verbose "secondary stat list type: $(Get-ComTypeName $secondarystatlist)"
+        }
+
+        $secondarystats = $secondarystatlist.getElementsByClassName("statmod-stat")
         for ($i = 0; $i -lt $secondarystats.length; $i++) {
+
             $stat = $secondarystats[$i]
+            if (($mods.Length -eq 0) -and ($i -eq 0)){
+                Write-Verbose "secondary stat type: $(Get-ComTypeName $stat)"
+            }
+
             $mod["secondaryType_$($i+1)"] = $stat.getElementsByClassName("statmod-stat-label")[0].textContent
             $mod["secondaryValue_$($i+1)"] = $stat.getElementsByClassName("statmod-stat-value")[0].textContent
         }
