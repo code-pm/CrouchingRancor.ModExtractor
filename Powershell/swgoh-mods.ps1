@@ -72,7 +72,7 @@ function Scrape-ModPage([string]$url) {
         $mod["level"] = $row.getElementsByClassName("statmod-level")[0].textContent
         $mod["characterName"] = $row.getElementsByClassName("char-portrait")[0].title
     
-        $primarystats = $row.getElementsByClassName("statmod-stats-1")[0]
+        $primarystats = $row.getElementsByClassName("statmod-stats-1")[0] | select -First 1
 
         if ($mods.Length -eq 0){
             Write-Verbose $row.outerHTML
