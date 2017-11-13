@@ -104,10 +104,14 @@ function Scrape-ModPage([string]$url) {
                 Write-Verbose "secondary stat type: $(Get-ComTypeName $stat)"
             }
 
+            Write-Verbose "Setting secondaryType_$($i+1)"
             $mod["secondaryType_$($i+1)"] = $stat.getElementsByClassName("statmod-stat-label")[0].textContent
+            
+            Write-Verbose "Setting secondaryValue_$($i+1)"
             $mod["secondaryValue_$($i+1)"] = $stat.getElementsByClassName("statmod-stat-value")[0].textContent
         }
         
+        Write-Verbose ($mod | ConvertTo-Json)
         $mods += $mod
     }
 
@@ -116,14 +120,21 @@ function Scrape-ModPage([string]$url) {
     #   <li>..<li>
     #   <li><a href="nexturl"></a><li>          <--------
     # </ul>
+    Write-Verbose "Parsing pagination..."
     $pgr = $r.ParsedHtml.GetElementsByTagName("ul") | ? { $_.className.Contains("pagination") } | select -First 1
+
+    Write-Verbose "Parsing pagination... step 2"
     $j = $pgr.children.length - 1
+
+    Write-Verbose "Parsing pagination... step 3"
     $nexturl = [string]$pgr.children[$j].children[0].attributes["href"].textContent
 
+    Write-Verbose "Next URL: $nexturl"
     if ($nexturl.StartsWith("/u/")){
         $mods += Scrape-ModPage "https://swgoh.gg$($nexturl)"
     }
 
+    Write-Verbose "Returning mods: $($mods.Length)"
     return $mods
 }
 
