@@ -38,3 +38,17 @@ Downloaded page 2 for user sirrobindabrave, got 36 mods
 Downloaded page 3 for user sirrobindabrave, got 31 mods
 Found 103 mods, wrote to sirrobindabrave.json
 ```
+
+## Using the docker image
+
+The ruby extractor has been bundled up in a docker image.
+
+```bash
+$ docker run jonmoter/rancor-mod-extractor:latest YOUR_USER_NAME > output.json
+```
+
+If you want the JSON to be more readable:
+
+```bash
+$ docker run -e PRETTY=1 jonmoter/rancor-mod-extractor:latest YOUR_USER_NAME > output.json
+```
